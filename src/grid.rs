@@ -56,15 +56,15 @@ impl Grid {
 
     pub fn next_cell_state(&self, coord: &Coord) -> bool {
         let current_state = self.cell_state(coord).unwrap_or(false);
-        let live_neighbors_count = self.count_live_neighbors(coord);
+        let living_neighbors_count = self.count_living_neighbors(coord);
 
         matches!(
-            (current_state, live_neighbors_count),
+            (current_state, living_neighbors_count),
             (true, 2) | (true, 3) | (false, 3)
         )
     }
 
-    fn count_live_neighbors(&self, coord: &Coord) -> usize {
+    fn count_living_neighbors(&self, coord: &Coord) -> usize {
         let mut count = 0;
         for dy in -1..=1 {
             for dx in -1..=1 {

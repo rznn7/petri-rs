@@ -1,17 +1,17 @@
+use std::fmt::Display;
+
 use crate::grid::Grid;
 
 pub struct Game {
     generation: u32,
     pub grid: Grid,
-    size: (usize, usize),
 }
 
 impl Game {
-    pub fn new(size: (usize, usize)) -> Self {
+    pub fn new(grid: Grid) -> Self {
         Game {
             generation: 0,
-            grid: Grid::new(size.0, size.1),
-            size,
+            grid,
         }
     }
 
@@ -32,7 +32,15 @@ impl Game {
         });
 
         self.grid = new_grid;
+        self.generation += 1;
 
         has_changed
+    }
+}
+
+impl Display for Game {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Generation: {}", self.generation)?; // if you have a generation field
+        write!(f, "{}", self.grid)
     }
 }
