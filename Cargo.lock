@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "game-of-life"
+name = "petri-rs"
 version = "0.1.0"
