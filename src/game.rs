@@ -1,14 +1,14 @@
 use std::fmt::Display;
 
-use crate::grid::Grid;
+use crate::index_grid::IndexGrid;
 
 pub struct Game {
     generation: u32,
-    pub grid: Grid,
+    pub grid: IndexGrid,
 }
 
 impl Game {
-    pub fn new(grid: Grid) -> Self {
+    pub fn new(grid: IndexGrid) -> Self {
         Game {
             generation: 0,
             grid,
@@ -16,31 +16,22 @@ impl Game {
     }
 
     pub fn tick(&mut self) -> bool {
-        let current_grid = &self.grid;
-        let mut new_grid = self.grid.clone();
-
-        let mut has_changed = false;
-
-        current_grid.get_all_coords().iter().for_each(|coord| {
-            let current_state = current_grid.cell_state(coord).unwrap_or(false);
-            let next_state = current_grid.next_cell_state(coord);
-
-            if current_state != next_state {
-                let _ = new_grid.set_cell_state(coord, next_state);
-                has_changed = true
+        match self.grid.next_cells_with_change_info() {
+            Ok(res) => {
+                self.grid.cells = res.0;
+                self.generation += 1;
+                res.1
             }
-        });
-
-        self.grid = new_grid;
-        self.generation += 1;
-
-        has_changed
+            _ => {
+                panic!("Could not compute next ");
+            }
+        }
     }
 }
 
 impl Display for Game {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "Generation: {}", self.generation)?; // if you have a generation field
+        writeln!(f, "gen: {}", self.generation)?;
         write!(f, "{}", self.grid)
     }
 }
