@@ -1,14 +1,14 @@
 use std::fmt::Display;
 
-use crate::index_grid::IndexGrid;
+use crate::grid::Grid;
 
 pub struct Game {
     generation: u32,
-    pub grid: IndexGrid,
+    pub grid: Grid,
 }
 
 impl Game {
-    pub fn new(grid: IndexGrid) -> Self {
+    pub fn new(grid: Grid) -> Self {
         Game {
             generation: 0,
             grid,

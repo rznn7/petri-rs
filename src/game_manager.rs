@@ -60,25 +60,25 @@ mod tests {
     use std::time::Duration;
 
     use super::*;
-    use crate::index_grid::IndexGrid;
+    use crate::grid::Grid;
 
     #[test]
     fn test_should_create_game_manager_with_game() {
-        let game_manager = GameManager::new(Game::new(IndexGrid::new(3, 3)));
+        let game_manager = GameManager::new(Game::new(Grid::new(3, 3)));
 
         let _game = game_manager.game;
     }
 
     #[test]
     fn test_should_allow_tick_trigger() {
-        let mut game_manager = GameManager::new(Game::new(IndexGrid::new(3, 3)));
+        let mut game_manager = GameManager::new(Game::new(Grid::new(3, 3)));
 
         game_manager.game.tick();
     }
 
     #[test]
     fn test_should_handle_playing_state() {
-        let mut game_manager = GameManager::new(Game::new(IndexGrid::new(3, 3)));
+        let mut game_manager = GameManager::new(Game::new(Grid::new(3, 3)));
 
         assert!(!game_manager.is_playing());
         game_manager.play();
@@ -89,7 +89,7 @@ mod tests {
 
     #[test]
     fn test_should_have_interval() {
-        let mut game_manager = GameManager::new(Game::new(IndexGrid::new(3, 3)));
+        let mut game_manager = GameManager::new(Game::new(Grid::new(3, 3)));
 
         assert_eq!(game_manager.interval, Duration::from_millis(500));
         game_manager.set_interval(Duration::from_millis(200));
@@ -98,7 +98,7 @@ mod tests {
 
     #[test]
     fn test_should_track_last_tick_time() {
-        let mut game_manager = GameManager::new(Game::new(IndexGrid::new(3, 3)));
+        let mut game_manager = GameManager::new(Game::new(Grid::new(3, 3)));
 
         assert!(game_manager.last_tick_time.is_none());
 
@@ -114,7 +114,7 @@ mod tests {
     #[test]
     fn test_should_ask_for_tick_if_interval_passed() {
         let mut game_manager = GameManager {
-            game: Game::new(IndexGrid::new(1, 1)),
+            game: Game::new(Grid::new(1, 1)),
             interval: Duration::from_millis(100),
             is_playing: true,
             last_tick_time: Instant::now().checked_sub(Duration::from_millis(500)),
@@ -126,7 +126,7 @@ mod tests {
     #[test]
     fn test_should_not_ask_for_tick_if_interval_not_passed() {
         let mut game_manager = GameManager {
-            game: Game::new(IndexGrid::new(1, 1)),
+            game: Game::new(Grid::new(1, 1)),
             interval: Duration::from_secs(500),
             is_playing: true,
             last_tick_time: Some(Instant::now()),

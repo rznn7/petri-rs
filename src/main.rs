@@ -3,11 +3,11 @@ use std::time::Duration;
 use eframe::egui;
 use game::Game;
 use game_manager::GameManager;
-use index_grid::IndexGrid;
+use grid::Grid;
 
 mod game;
 mod game_manager;
-mod index_grid;
+mod grid;
 
 fn main() -> eframe::Result {
     eframe::run_native(
@@ -26,7 +26,7 @@ struct MyApp {
 
 impl Default for MyApp {
     fn default() -> Self {
-        let mut grid = IndexGrid::new(3, 3);
+        let mut grid = Grid::new(3, 3);
         let _ = grid.set_cell_at_coord((0, 1), true);
         let _ = grid.set_cell_at_coord((1, 1), true);
         let _ = grid.set_cell_at_coord((2, 1), true);

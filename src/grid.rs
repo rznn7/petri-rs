@@ -1,15 +1,15 @@
 use std::fmt::Display;
 
 #[derive(Clone, Debug)]
-pub struct IndexGrid {
+pub struct Grid {
     pub cells: Vec<bool>,
     pub width: usize,
     pub height: usize,
 }
 
-impl IndexGrid {
+impl Grid {
     pub fn new(width: usize, height: usize) -> Self {
-        IndexGrid {
+        Grid {
             cells: vec![false; width * height],
             width,
             height,
@@ -136,7 +136,7 @@ pub enum IndexGridError {
     IndexOutOfBounds,
 }
 
-impl Display for IndexGrid {
+impl Display for Grid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for (i, &cell) in self.cells.iter().enumerate() {
             if i % self.width == 0 {
@@ -158,7 +158,7 @@ mod tests {
 
     #[test]
     fn test_creating_empty_grid() {
-        let grid = IndexGrid::new(4, 5);
+        let grid = Grid::new(4, 5);
 
         for i in 0..20 {
             if let Ok(value) = grid.get_cell(i) {
@@ -169,7 +169,7 @@ mod tests {
 
     #[test]
     fn test_accessing_cell_out_of_bounds() {
-        let grid = IndexGrid::new(1, 1);
+        let grid = Grid::new(1, 1);
 
         let result: Result<bool, IndexGridError> = grid.get_cell(100);
 
@@ -178,7 +178,7 @@ mod tests {
 
     #[test]
     fn test_setting_cell() {
-        let mut grid = IndexGrid::new(5, 5);
+        let mut grid = Grid::new(5, 5);
 
         let result: Result<(), IndexGridError> = grid.set_cell(5, true);
 
@@ -191,7 +191,7 @@ mod tests {
 
     #[test]
     fn test_setting_cell_out_of_bounds() {
-        let mut grid = IndexGrid::new(1, 1);
+        let mut grid = Grid::new(1, 1);
 
         let result: Result<(), IndexGridError> = grid.set_cell(100, true);
 
@@ -200,7 +200,7 @@ mod tests {
 
     #[test]
     fn test_getting_indexes_as_coordinates() {
-        let grid = IndexGrid::new(4, 4);
+        let grid = Grid::new(4, 4);
 
         assert_eq!(grid.index_to_coord(0), (0, 0));
         assert_eq!(grid.index_to_coord(1), (1, 0));
@@ -215,7 +215,7 @@ mod tests {
 
     #[test]
     fn test_getting_coordinates_as_indexes() {
-        let grid = IndexGrid::new(4, 4);
+        let grid = Grid::new(4, 4);
 
         assert_eq!(grid.coord_to_index((0, 0)), 0);
         assert_eq!(grid.coord_to_index((1, 0)), 1);
@@ -230,7 +230,7 @@ mod tests {
 
     #[test]
     fn test_getting_cell_with_coord() {
-        let mut grid = IndexGrid::new(4, 4);
+        let mut grid = Grid::new(4, 4);
 
         let _ = grid.set_cell(15, true);
 
@@ -243,7 +243,7 @@ mod tests {
 
     #[test]
     fn test_setting_cell_with_coord() {
-        let mut grid = IndexGrid::new(5, 5);
+        let mut grid = Grid::new(5, 5);
 
         let result: Result<(), IndexGridError> = grid.set_cell_at_coord((4, 3), true);
         assert!(result.is_ok());
@@ -254,7 +254,7 @@ mod tests {
 
     #[test]
     fn test_count_living_neighbors() {
-        let mut grid = IndexGrid::new(3, 3);
+        let mut grid = Grid::new(3, 3);
 
         let _ = grid.set_cell_at_coord((1, 0), true);
         let _ = grid.set_cell_at_coord((0, 1), true);
@@ -270,7 +270,7 @@ mod tests {
 
     #[test]
     fn test_count_living_neighbors_in_corners() {
-        let mut grid = IndexGrid::new(3, 3);
+        let mut grid = Grid::new(3, 3);
 
         let _ = grid.set_cell_at_coord((1, 1), true);
 
@@ -291,7 +291,7 @@ mod tests {
 
     #[test]
     fn test_cell_next_dead_to_live() {
-        let mut grid = IndexGrid::new(3, 3);
+        let mut grid = Grid::new(3, 3);
 
         let _ = grid.set_cell_at_coord((0, 0), true);
         let _ = grid.set_cell_at_coord((0, 1), true);
@@ -307,7 +307,7 @@ mod tests {
 
     #[test]
     fn test_cell_next_dead_to_dead() {
-        let grid = IndexGrid::new(3, 3);
+        let grid = Grid::new(3, 3);
 
         let result: Result<bool, IndexGridError> = grid.next_cell(4);
 
@@ -319,7 +319,7 @@ mod tests {
 
     #[test]
     fn test_cell_live_to_dead() {
-        let mut grid = IndexGrid::new(3, 3);
+        let mut grid = Grid::new(3, 3);
 
         let _ = grid.set_cell(4, true);
 
@@ -333,7 +333,7 @@ mod tests {
 
     #[test]
     fn test_cell_next_live_to_live() {
-        let mut grid = IndexGrid::new(3, 3);
+        let mut grid = Grid::new(3, 3);
 
         let _ = grid.set_cell(4, true);
 
@@ -351,7 +351,7 @@ mod tests {
 
     #[test]
     fn test_getting_grid_next_state_with_change_info() {
-        let mut grid = IndexGrid::new(3, 3);
+        let mut grid = Grid::new(3, 3);
 
         let _ = grid.set_cell(3, true);
         let _ = grid.set_cell(4, true);
