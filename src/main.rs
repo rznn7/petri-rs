@@ -8,6 +8,7 @@ use grid::Grid;
 mod game;
 mod game_manager;
 mod grid;
+mod grid_evolver;
 
 fn main() -> eframe::Result {
     eframe::run_native(

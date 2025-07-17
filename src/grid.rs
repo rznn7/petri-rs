@@ -16,25 +16,15 @@ impl Grid {
         }
     }
 
-    fn get_cell(&self, i: usize) -> Result<bool, IndexGridError> {
+    pub fn get_cell(&self, i: usize) -> Result<bool, IndexGridError> {
         if !self.is_index_inbounds(i) {
             return Err(IndexGridError::IndexOutOfBounds);
         }
-
         Ok(self.cells[i])
     }
 
     fn get_cell_at_coord(&self, coord: (usize, usize)) -> Result<bool, IndexGridError> {
         self.get_cell(self.coord_to_index(coord))
-    }
-
-    fn set_cell(&mut self, i: usize, value: bool) -> Result<(), IndexGridError> {
-        if !self.is_index_inbounds(i) {
-            return Err(IndexGridError::IndexOutOfBounds);
-        }
-
-        self.cells[i] = value;
-        Ok(())
     }
 
     pub fn set_cell_at_coord(
@@ -45,7 +35,15 @@ impl Grid {
         self.set_cell(self.coord_to_index(coord), value)
     }
 
-    fn index_to_coord(&self, i: usize) -> (usize, usize) {
+    fn set_cell(&mut self, i: usize, value: bool) -> Result<(), IndexGridError> {
+        if !self.is_index_inbounds(i) {
+            return Err(IndexGridError::IndexOutOfBounds);
+        }
+        self.cells[i] = value;
+        Ok(())
+    }
+
+    pub fn index_to_coord(&self, i: usize) -> (usize, usize) {
         (i % self.width, i / self.width)
     }
 
@@ -54,7 +52,7 @@ impl Grid {
         y * self.width + x
     }
 
-    fn count_living_neighbors_at_coord(
+    pub fn count_living_neighbors_at_coord(
         &self,
         coord: (usize, usize),
     ) -> Result<usize, IndexGridError> {
@@ -63,7 +61,6 @@ impl Grid {
         }
 
         let (x, y) = (coord.0 as i32, coord.1 as i32);
-
         let potential_neighbors = [
             (x - 1, y),
             (x + 1, y),
@@ -75,19 +72,17 @@ impl Grid {
             (x + 1, y - 1),
         ];
 
-        let valid_neighbors: Vec<(usize, usize)> = potential_neighbors
+        let valid_neighbors = potential_neighbors
             .iter()
             .filter(|&&n| self.is_coord_inbounds(n))
-            .map(|&n| (n.0 as usize, n.1 as usize))
-            .collect();
+            .map(|&n| (n.0 as usize, n.1 as usize));
 
-        let living_neighbors_count = valid_neighbors
-            .iter()
-            .map(|&n| self.get_cell_at_coord(n).unwrap_or(false))
+        let count = valid_neighbors
+            .map(|n| self.get_cell_at_coord(n).unwrap_or(false))
             .filter(|&v| v)
             .count();
 
-        Ok(living_neighbors_count)
+        Ok(count)
     }
 
     fn is_index_inbounds(&self, i: usize) -> bool {
@@ -96,44 +91,8 @@ impl Grid {
 
     fn is_coord_inbounds(&self, coord: (i32, i32)) -> bool {
         let (x, y) = coord;
-
         x >= 0 && y >= 0 && x < self.width as i32 && y < self.height as i32
     }
-
-    fn next_cell(&self, i: usize) -> Result<bool, IndexGridError> {
-        let current_state = self.get_cell(i)?;
-        let living_neighbors = self.count_living_neighbors_at_coord(self.index_to_coord(i))?;
-
-        match (current_state, living_neighbors) {
-            (false, 3) => Ok(true),
-            (true, 2) => Ok(true),
-            (true, 3) => Ok(true),
-            _ => Ok(false),
-        }
-    }
-
-    pub fn next_cells_with_change_info(&self) -> Result<(Vec<bool>, bool), IndexGridError> {
-        let cell_count = self.width * self.height;
-        let mut next_cells = vec![false; cell_count];
-        let mut has_changed = false;
-
-        for (i, cell) in next_cells.iter_mut().enumerate() {
-            let current_cell = self.get_cell(i)?;
-            let next_cell = self.next_cell(i)?;
-            *cell = next_cell;
-
-            if next_cell != current_cell {
-                has_changed = true;
-            }
-        }
-
-        Ok((next_cells, has_changed))
-    }
-}
-
-#[derive(Clone, Debug)]
-pub enum IndexGridError {
-    IndexOutOfBounds,
 }
 
 impl Display for Grid {
@@ -150,6 +109,11 @@ impl Display for Grid {
 
 fn get_symbol(value: bool) -> &'static str {
     if value { "■" } else { "•" }
+}
+
+#[derive(Clone, Debug)]
+pub enum IndexGridError {
+    IndexOutOfBounds,
 }
 
 #[cfg(test)]
@@ -287,84 +251,5 @@ mod tests {
                 assert_eq!(value, 1);
             }
         });
-    }
-
-    #[test]
-    fn test_cell_next_dead_to_live() {
-        let mut grid = Grid::new(3, 3);
-
-        let _ = grid.set_cell_at_coord((0, 0), true);
-        let _ = grid.set_cell_at_coord((0, 1), true);
-        let _ = grid.set_cell_at_coord((0, 2), true);
-
-        let result: Result<bool, IndexGridError> = grid.next_cell(4);
-
-        assert!(result.is_ok());
-        if let Ok(value) = result {
-            assert!(value);
-        }
-    }
-
-    #[test]
-    fn test_cell_next_dead_to_dead() {
-        let grid = Grid::new(3, 3);
-
-        let result: Result<bool, IndexGridError> = grid.next_cell(4);
-
-        assert!(result.is_ok());
-        if let Ok(value) = result {
-            assert!(!value);
-        }
-    }
-
-    #[test]
-    fn test_cell_live_to_dead() {
-        let mut grid = Grid::new(3, 3);
-
-        let _ = grid.set_cell(4, true);
-
-        let result: Result<bool, IndexGridError> = grid.next_cell(4);
-
-        assert!(result.is_ok());
-        if let Ok(value) = result {
-            assert!(!value);
-        }
-    }
-
-    #[test]
-    fn test_cell_next_live_to_live() {
-        let mut grid = Grid::new(3, 3);
-
-        let _ = grid.set_cell(4, true);
-
-        let _ = grid.set_cell_at_coord((0, 0), true);
-        let _ = grid.set_cell_at_coord((0, 1), true);
-        let _ = grid.set_cell_at_coord((0, 2), true);
-
-        let result: Result<bool, IndexGridError> = grid.next_cell(4);
-
-        assert!(result.is_ok());
-        if let Ok(value) = result {
-            assert!(value);
-        }
-    }
-
-    #[test]
-    fn test_getting_grid_next_state_with_change_info() {
-        let mut grid = Grid::new(3, 3);
-
-        let _ = grid.set_cell(3, true);
-        let _ = grid.set_cell(4, true);
-        let _ = grid.set_cell(5, true);
-
-        let result = grid.next_cells_with_change_info();
-        assert!(result.is_ok());
-        if let Ok(value) = result {
-            assert!(value.1);
-            assert_eq!(
-                value.0,
-                vec![false, true, false, false, true, false, false, true, false]
-            )
-        }
     }
 }

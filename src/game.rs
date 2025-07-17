@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::grid::Grid;
+use crate::{grid::Grid, grid_evolver::GridEvolver};
 
 pub struct Game {
     generation: u32,
@@ -16,7 +16,7 @@ impl Game {
     }
 
     pub fn tick(&mut self) -> bool {
-        match self.grid.next_cells_with_change_info() {
+        match GridEvolver::next_generation(&self.grid) {
             Ok(res) => {
                 self.grid.cells = res.0;
                 self.generation += 1;
