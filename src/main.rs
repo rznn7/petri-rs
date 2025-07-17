@@ -2,11 +2,11 @@ use std::time::Duration;
 
 use eframe::egui;
 use game::Game;
-use game_manager::GameManager;
+use game_loop::GameManager;
 use grid::Grid;
 
 mod game;
-mod game_manager;
+mod game_loop;
 mod grid;
 mod grid_evolver;
 
