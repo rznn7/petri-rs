@@ -4,11 +4,13 @@ use eframe::egui;
 use game::Game;
 use game_loop::GameController;
 use grid::Grid;
+use ui::GridView;
 
 mod game;
 mod game_loop;
 mod grid;
 mod grid_evolver;
+mod ui;
 
 fn main() -> eframe::Result {
     eframe::run_native(
@@ -64,7 +66,7 @@ impl eframe::App for MyApp {
                 }
             });
 
-            ui.monospace(self.game_manager.game.to_string());
+            ui.add(GridView::new(&self.game_manager.game.grid));
         });
     }
 }

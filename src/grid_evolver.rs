@@ -4,7 +4,7 @@ pub struct GridEvolver;
 
 impl GridEvolver {
     pub fn next_generation(grid: &Grid) -> Result<(Vec<bool>, bool), IndexGridError> {
-        let cell_count = grid.width * grid.height;
+        let cell_count = grid.width() * grid.height();
         let mut next_cells = vec![false; cell_count];
         let mut has_changed = false;
 

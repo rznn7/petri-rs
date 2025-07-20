@@ -16,16 +16,14 @@ impl Game {
     }
 
     pub fn tick(&mut self) -> bool {
-        match GridEvolver::next_generation(&self.grid) {
-            Ok(res) => {
-                self.grid.cells = res.0;
-                self.generation += 1;
-                res.1
-            }
-            _ => {
-                panic!("Could not compute next generation.");
-            }
-        }
+        let (new_cells, changed) = GridEvolver::next_generation(&self.grid)
+            .expect("tick: computing next generation failed");
+
+        self.grid
+            .set_cells(new_cells)
+            .expect("tick: applying new generation failed");
+        self.generation += 1;
+        changed
     }
 }
 

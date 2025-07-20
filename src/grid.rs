@@ -2,9 +2,9 @@ use std::fmt::Display;
 
 #[derive(Clone, Debug)]
 pub struct Grid {
-    pub cells: Vec<bool>,
-    pub width: usize,
-    pub height: usize,
+    cells: Vec<bool>,
+    width: usize,
+    height: usize,
 }
 
 impl Grid {
@@ -16,6 +16,22 @@ impl Grid {
         }
     }
 
+    pub fn width(&self) -> usize {
+        self.width
+    }
+
+    pub fn height(&self) -> usize {
+        self.height
+    }
+
+    pub fn set_cells(&mut self, cells: Vec<bool>) -> Result<(), IndexGridError> {
+        if cells.len() != self.cells_length() {
+            return Err(IndexGridError::IncompatibleCellCount);
+        }
+        self.cells = cells;
+        Ok(())
+    }
+
     pub fn get_cell(&self, i: usize) -> Result<bool, IndexGridError> {
         if !self.is_index_inbounds(i) {
             return Err(IndexGridError::IndexOutOfBounds);
@@ -23,7 +39,7 @@ impl Grid {
         Ok(self.cells[i])
     }
 
-    fn get_cell_at_coord(&self, coord: (usize, usize)) -> Result<bool, IndexGridError> {
+    pub fn get_cell_at_coord(&self, coord: (usize, usize)) -> Result<bool, IndexGridError> {
         self.get_cell(self.coord_to_index(coord))
     }
 
@@ -85,8 +101,12 @@ impl Grid {
         Ok(count)
     }
 
+    fn cells_length(&self) -> usize {
+        self.width * self.height
+    }
+
     fn is_index_inbounds(&self, i: usize) -> bool {
-        i < self.width * self.height
+        i < self.cells_length()
     }
 
     fn is_coord_inbounds(&self, coord: (i32, i32)) -> bool {
@@ -114,6 +134,7 @@ fn get_symbol(value: bool) -> &'static str {
 #[derive(Clone, Debug)]
 pub enum IndexGridError {
     IndexOutOfBounds,
+    IncompatibleCellCount,
 }
 
 #[cfg(test)]
