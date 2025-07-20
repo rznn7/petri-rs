@@ -23,7 +23,7 @@ impl Game {
                 res.1
             }
             _ => {
-                panic!("Could not compute next ");
+                panic!("Could not compute next generation.");
             }
         }
     }

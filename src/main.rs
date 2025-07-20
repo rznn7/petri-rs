@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use eframe::egui;
 use game::Game;
-use game_loop::GameManager;
+use game_loop::GameController;
 use grid::Grid;
 
 mod game;
@@ -22,7 +22,7 @@ fn main() -> eframe::Result {
 }
 
 struct MyApp {
-    game_manager: GameManager,
+    game_manager: GameController,
 }
 
 impl Default for MyApp {
@@ -32,7 +32,7 @@ impl Default for MyApp {
         let _ = grid.set_cell_at_coord((1, 1), true);
         let _ = grid.set_cell_at_coord((2, 1), true);
 
-        let mut game_manager = GameManager::new(Game::new(grid));
+        let mut game_manager = GameController::new(Game::new(grid));
         game_manager.set_interval(Duration::from_millis(200));
 
         Self { game_manager }

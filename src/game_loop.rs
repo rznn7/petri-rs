@@ -53,13 +53,13 @@ impl<T: TimeSource> GameClock<T> {
     }
 }
 
-pub struct GameManager {
+pub struct GameController {
     pub game: Game,
     playback: Playback,
     clock: GameClock<SystemClock>,
 }
 
-impl GameManager {
+impl GameController {
     pub fn new(game: Game) -> Self {
         Self {
             game,
@@ -132,7 +132,7 @@ mod tests {
 
     #[test]
     fn test_should_handle_playing_state() {
-        let mut gm = GameManager::new(Game::new(Grid::new(3, 3)));
+        let mut gm = GameController::new(Game::new(Grid::new(3, 3)));
 
         assert!(!gm.is_playing());
         gm.play();
@@ -143,7 +143,7 @@ mod tests {
 
     #[test]
     fn test_should_tick_after_interval() {
-        let mut gm = GameManager::new(Game::new(Grid::new(1, 1)));
+        let mut gm = GameController::new(Game::new(Grid::new(1, 1)));
         gm.play();
         gm.set_interval(Duration::from_millis(1));
 
