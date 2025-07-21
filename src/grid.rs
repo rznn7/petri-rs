@@ -51,6 +51,11 @@ impl Grid {
         self.set_cell(self.coord_to_index(coord), value)
     }
 
+    pub fn toggle_cell_at_coord(&mut self, coord: (usize, usize)) -> Result<(), IndexGridError> {
+        let current = self.get_cell_at_coord(coord)?;
+        self.set_cell(self.coord_to_index(coord), !current)
+    }
+
     fn set_cell(&mut self, i: usize, value: bool) -> Result<(), IndexGridError> {
         if !self.is_index_inbounds(i) {
             return Err(IndexGridError::IndexOutOfBounds);

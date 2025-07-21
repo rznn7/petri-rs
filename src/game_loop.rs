@@ -1,6 +1,6 @@
 use std::time::{Duration, Instant};
 
-use crate::game::Game;
+use crate::{game::Game, ui::PointerGridEvent};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 enum Playback {
@@ -16,12 +16,12 @@ struct GameClock<T: TimeSource> {
     time: T,
 }
 
-trait TimeSource {
+pub trait TimeSource {
     fn now(&self) -> Instant;
 }
 
 #[derive(Default, Clone, Copy)]
-struct SystemClock;
+pub struct SystemClock;
 
 impl TimeSource for SystemClock {
     fn now(&self) -> Instant {
@@ -53,18 +53,18 @@ impl<T: TimeSource> GameClock<T> {
     }
 }
 
-pub struct GameController {
+pub struct GameController<T: TimeSource> {
     pub game: Game,
     playback: Playback,
-    clock: GameClock<SystemClock>,
+    clock: GameClock<T>,
 }
 
-impl GameController {
-    pub fn new(game: Game) -> Self {
+impl<T: TimeSource> GameController<T> {
+    pub fn new(game: Game, time_source: T) -> Self {
         Self {
             game,
             playback: Playback::default(),
-            clock: GameClock::new(Duration::from_millis(500), SystemClock),
+            clock: GameClock::new(Duration::from_millis(500), time_source),
         }
     }
 
@@ -92,6 +92,24 @@ impl GameController {
     pub fn tick(&mut self) {
         let _changed = self.game.tick();
         self.clock.mark_tick();
+    }
+
+    pub fn handle_pointer_event(&mut self, event: PointerGridEvent) {
+        match event {
+            PointerGridEvent::Hovered { cell: _ } => {}
+            PointerGridEvent::LeftClick { cell } => self.toggle_cell(cell),
+            PointerGridEvent::RightClick { cell: _ } => {}
+            PointerGridEvent::BothClick { cell: _ } => {}
+        };
+    }
+
+    fn toggle_cell(&mut self, coord: (usize, usize)) {
+        match self.game.grid.toggle_cell_at_coord(coord) {
+            Ok(_) => (),
+            Err(_) => {
+                eprintln!("Error: Could not toggle");
+            }
+        };
     }
 }
 
@@ -132,7 +150,12 @@ mod tests {
 
     #[test]
     fn test_should_handle_playing_state() {
-        let mut gm = GameController::new(Game::new(Grid::new(3, 3)));
+        let mut gm = GameController::new(
+            Game::new(Grid::new(3, 3)),
+            MockClock {
+                now: Instant::now(),
+            },
+        );
 
         assert!(!gm.is_playing());
         gm.play();
@@ -142,12 +165,95 @@ mod tests {
     }
 
     #[test]
-    fn test_should_tick_after_interval() {
-        let mut gm = GameController::new(Game::new(Grid::new(1, 1)));
-        gm.play();
-        gm.set_interval(Duration::from_millis(1));
+    fn test_game_clock_set_interval() {
+        let mut clock = GameClock::new(
+            Duration::from_secs(1),
+            MockClock {
+                now: Instant::now(),
+            },
+        );
+        clock.set_interval(Duration::from_millis(250));
+        assert_eq!(clock.interval, Duration::from_millis(250));
+    }
 
-        while !gm.should_tick() {}
-        gm.tick();
+    #[test]
+    fn test_controller_should_tick_after_interval() {
+        let start = Instant::now();
+        let clock = MockClock { now: start };
+
+        let mut controller = GameController::new(Game::new(Grid::new(1, 1)), clock);
+        controller.play();
+
+        assert!(!controller.should_tick());
+
+        controller.clock.time.now += Duration::from_millis(500);
+        assert!(controller.should_tick());
+
+        controller.tick();
+    }
+
+    #[test]
+    fn test_handle_pointer_event_hovered_does_nothing() {
+        let mut controller = GameController::new(
+            Game::new(Grid::new(2, 2)),
+            MockClock {
+                now: Instant::now(),
+            },
+        );
+        let cell = (0, 0);
+        assert!(!controller.game.grid.get_cell_at_coord(cell).unwrap());
+
+        controller.handle_pointer_event(PointerGridEvent::Hovered { cell });
+
+        assert!(!controller.game.grid.get_cell_at_coord(cell).unwrap());
+    }
+
+    #[test]
+    fn test_handle_pointer_event_left_click_toggles_cell() {
+        let mut controller = GameController::new(
+            Game::new(Grid::new(3, 3)),
+            MockClock {
+                now: Instant::now(),
+            },
+        );
+
+        let cell = (1, 1);
+        assert!(!controller.game.grid.get_cell_at_coord(cell).unwrap());
+
+        controller.handle_pointer_event(PointerGridEvent::LeftClick { cell });
+
+        assert!(controller.game.grid.get_cell_at_coord(cell).unwrap());
+    }
+
+    #[test]
+    fn test_handle_pointer_event_right_click_does_nothing() {
+        let mut controller = GameController::new(
+            Game::new(Grid::new(2, 2)),
+            MockClock {
+                now: Instant::now(),
+            },
+        );
+        let cell = (0, 0);
+        assert!(!controller.game.grid.get_cell_at_coord(cell).unwrap());
+
+        controller.handle_pointer_event(PointerGridEvent::RightClick { cell });
+
+        assert!(!controller.game.grid.get_cell_at_coord(cell).unwrap());
+    }
+
+    #[test]
+    fn test_handle_pointer_event_both_click_does_nothing() {
+        let mut controller = GameController::new(
+            Game::new(Grid::new(2, 2)),
+            MockClock {
+                now: Instant::now(),
+            },
+        );
+        let cell = (0, 0);
+        assert!(!controller.game.grid.get_cell_at_coord(cell).unwrap());
+
+        controller.handle_pointer_event(PointerGridEvent::BothClick { cell });
+
+        assert!(!controller.game.grid.get_cell_at_coord(cell).unwrap());
     }
 }
