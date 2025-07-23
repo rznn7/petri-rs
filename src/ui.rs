@@ -2,7 +2,7 @@ use crate::grid::Grid;
 
 pub struct GridView<'a> {
     grid: &'a Grid,
-    cell_px: f32,
+    cell_size_px: f32,
 }
 
 pub struct GridViewResult {
@@ -19,17 +19,14 @@ pub enum PointerGridEvent {
 }
 
 impl<'a> GridView<'a> {
-    pub fn new(grid: &'a Grid) -> Self {
-        Self {
-            grid,
-            cell_px: 24.0,
-        }
+    pub fn new(grid: &'a Grid, cell_size_px: f32) -> Self {
+        Self { grid, cell_size_px }
     }
 
     pub fn show(self, ui: &mut egui::Ui) -> GridViewResult {
         let grid_width = self.grid.width();
         let grid_height = self.grid.height();
-        let cell_size_px = self.cell_px;
+        let cell_size_px = self.cell_size_px;
         let grid_dimension = egui::vec2(
             grid_width as f32 * cell_size_px,
             grid_height as f32 * cell_size_px,

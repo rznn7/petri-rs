@@ -81,8 +81,9 @@ impl<T: TimeSource> GameController<T> {
         self.playback == Playback::Playing
     }
 
-    pub fn set_interval(&mut self, interval: Duration) {
+    pub fn with_interval(mut self, interval: Duration) -> Self {
         self.clock.set_interval(interval);
+        self
     }
 
     pub fn should_tick(&self) -> bool {
@@ -97,13 +98,17 @@ impl<T: TimeSource> GameController<T> {
     pub fn handle_pointer_event(&mut self, event: PointerGridEvent) {
         match event {
             PointerGridEvent::Hovered { cell: _ } => {}
-            PointerGridEvent::LeftClick { cell } => self.toggle_cell(cell),
+            PointerGridEvent::LeftClick { cell } => self.on_left_click(cell),
             PointerGridEvent::RightClick { cell: _ } => {}
             PointerGridEvent::BothClick { cell: _ } => {}
         };
     }
 
-    fn toggle_cell(&mut self, coord: (usize, usize)) {
+    fn on_left_click(&mut self, coord: (usize, usize)) {
+        if self.is_playing() {
+            self.pause();
+        }
+
         match self.game.grid.toggle_cell_at_coord(coord) {
             Ok(_) => (),
             Err(_) => {
@@ -209,7 +214,7 @@ mod tests {
     }
 
     #[test]
-    fn test_handle_pointer_event_left_click_toggles_cell() {
+    fn test_handle_pointer_event_left_click_toggles_cell_and_pause_game() {
         let mut controller = GameController::new(
             Game::new(Grid::new(3, 3)),
             MockClock {
@@ -217,12 +222,15 @@ mod tests {
             },
         );
 
+        controller.play();
+
         let cell = (1, 1);
         assert!(!controller.game.grid.get_cell_at_coord(cell).unwrap());
 
         controller.handle_pointer_event(PointerGridEvent::LeftClick { cell });
 
         assert!(controller.game.grid.get_cell_at_coord(cell).unwrap());
+        assert!(!controller.is_playing())
     }
 
     #[test]
