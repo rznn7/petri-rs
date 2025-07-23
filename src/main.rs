@@ -140,7 +140,30 @@ impl MyApp {
         let (scroll, ctrl) = ctx.input(|i| (i.raw_scroll_delta.y, i.modifiers.ctrl));
         if scroll != 0.0 && ctrl {
             let zoom_speed = 0.01;
-            game.zoom = (game.zoom + scroll * zoom_speed).clamp(0.5, 4.0);
+            let old_zoom = game.zoom;
+            let new_zoom = (game.zoom + scroll * zoom_speed).clamp(0.5, 4.0);
+
+            if new_zoom != old_zoom {
+                if let Some(mouse_pos) = ctx.input(|i| i.pointer.hover_pos()) {
+                    let available_rect = ui.available_rect_before_wrap();
+
+                    let button_bar_height = 30.0;
+                    let scroll_area_rect = egui::Rect::from_min_size(
+                        available_rect.min + egui::Vec2::new(0.0, button_bar_height),
+                        available_rect.size() - egui::Vec2::new(0.0, button_bar_height),
+                    );
+
+                    if scroll_area_rect.contains(mouse_pos) {
+                        let mouse_in_scroll = mouse_pos - scroll_area_rect.min;
+                        let content_point = mouse_in_scroll + game.scroll_offset;
+                        let zoom_ratio = new_zoom / old_zoom;
+                        let new_content_point = content_point * zoom_ratio;
+
+                        game.scroll_offset = new_content_point - mouse_in_scroll;
+                        game.zoom = new_zoom;
+                    }
+                }
+            }
         }
 
         ui.horizontal(|ui| {
