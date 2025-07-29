@@ -35,5 +35,3 @@ This project explores key Rust concepts:
 - Testing with mocks and abstractions
 - Module organization and trait implementation
 - GUI development with egui
-
-Built with [eframe](https://github.com/emilk/egui) for cross-platform compatibility.
